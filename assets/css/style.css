@@ -106,6 +106,7 @@ h1{margin:0;width:max-content;max-width:100%;font-family:var(--f-head);font-weig
 .card h3{margin:0 0 .4rem;font-family:var(--f-head);font-size:1.15rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;line-height:1.25}
 .card p{margin:0;color:var(--muted);font-size:.93rem}
 .contact{display:grid;grid-template-columns:.95fr 1.05fr;gap:3.5rem;align-items:start}
+.contact>*{min-width:0}
 .ct-title{margin:0 0 1.6rem;font-family:var(--f-head);font-weight:900;text-transform:uppercase;letter-spacing:-.02em;line-height:.95;font-size:clamp(2.6rem,6vw,5rem)}
 .ct-title span{display:block}
 .ct-lead{max-width:44ch;margin:0 0 2.4rem;color:var(--muted);font-size:1.05rem}
@@ -131,6 +132,8 @@ h1{margin:0;width:max-content;max-width:100%;font-family:var(--f-head);font-weig
 .fld textarea{min-height:160px;resize:vertical}
 .fld input::placeholder,.fld textarea::placeholder{color:var(--muted);opacity:.55}
 .fld input:focus,.fld textarea:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
+.cap-wrap{margin:0 0 1.3rem;overflow:hidden}
+#captcha{width:304px;min-height:78px;transform-origin:0 0}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 .send{display:flex;align-items:center;justify-content:center;gap:.6rem;width:100%;padding:1rem;border:1px solid var(--text);border-radius:14px;background:var(--text);color:var(--bg);font:700 .9rem var(--f-ui);letter-spacing:.08em;cursor:pointer;transition:.3s}
 .send:hover{transform:translateY(-2px);box-shadow:0 10px 26px var(--glow)}

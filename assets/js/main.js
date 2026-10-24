@@ -15,7 +15,7 @@ id:{nav_home:'BERANDA',nav_about:'TENTANG',nav_skills:'SKILLS',nav_minat:'MINAT'
  m_iot:'Perangkat yang saling terhubung dalam kehidupan sehari-hari.',m_cloud:'Teknologi di balik layanan digital yang kita pakai.',m_code:'Dasar-dasar pemrograman, dimulai dari langkah kecil.',m_ai:'Memanfaatkan kecerdasan buatan untuk belajar dan berkarya dengan lebih efisien.',
  ct_title:'<span>AYO KITA</span><span>CIPTAKAN</span><span>SESUATU</span><span class="accent">BERSAMA.</span>',
  ct_p:'Tertarik berkolaborasi, punya kritik, atau saran? Isi formulir di samping atau kirim email langsung ke saya.',ct_email:'EMAIL LANGSUNG',ct_social:'MEDIA SOSIAL',
- f_name:'NAMA KAMU',f_email:'EMAIL KAMU',f_subject:'SUBJEK',f_msg:'PESAN',ph_name:'Nama lengkap',ph_email:'nama@email.com',ph_msg:'Ceritakan tentang proyek atau idemu...',
+ f_name:'NAMA KAMU',f_email:'EMAIL KAMU',f_subject:'SUBJEK',f_msg:'PESAN',ph_name:'Nama lengkap',ph_email:'nama@email.com',ph_msg:'Ceritakan tentang proyek atau idemu...',ph_subject:'Contoh: Kolaborasi Proyek',f_captcha:'Centang kotak “I’m not a robot” dulu.',f_cap_fail:'Verifikasi captcha gagal, silakan coba lagi.',f_cap_load:'reCAPTCHA belum termuat. Muat ulang halaman atau matikan ad-blocker.',f_long:'Pesan terlalu panjang untuk dikirim, mohon dipersingkat.',
  f_send:'KIRIM PESAN',f_sending:'MENGIRIM...',f_ok:'Pesan terkirim! Terima kasih, saya akan segera membalas.',f_err:'Gagal mengirim pesan. Coba lagi sebentar, atau kirim email langsung.',f_wait:'Tunggu sebentar sebelum mengirim pesan lagi.',copied:'Email disalin',
  roles:['Pelajar TKJ','Pengembang Web Pemula','Penyuka Teknologi']},
 en:{nav_home:'HOME',nav_about:'ABOUT',nav_skills:'SKILLS',nav_minat:'INTERESTS',nav_kontak:'CONTACT',
@@ -28,7 +28,7 @@ en:{nav_home:'HOME',nav_about:'ABOUT',nav_skills:'SKILLS',nav_minat:'INTERESTS',
  m_iot:'Connected devices in our everyday lives.',m_cloud:'The technology behind the digital services we use.',m_code:'Programming fundamentals, starting with small steps.',m_ai:'Using artificial intelligence to learn and create more efficiently.',
  ct_title:'<span>LET’S BUILD</span><span>SOMETHING</span><span class="accent">TOGETHER.</span>',
  ct_p:'Interested in collaborating, or got feedback or ideas? Fill out the form or drop me a direct email.',ct_email:'DIRECT EMAIL',ct_social:'SOCIAL PRESENCE',
- f_name:'YOUR NAME',f_email:'YOUR EMAIL',f_subject:'SUBJECT',f_msg:'MESSAGE',ph_name:'Your full name',ph_email:'name@email.com',ph_msg:'Tell me about your project or idea...',
+ f_name:'YOUR NAME',f_email:'YOUR EMAIL',f_subject:'SUBJECT',f_msg:'MESSAGE',ph_name:'Your full name',ph_email:'name@email.com',ph_msg:'Tell me about your project or idea...',ph_subject:'e.g. Project Collaboration',f_captcha:'Please tick “I’m not a robot” first.',f_cap_fail:'Captcha verification failed, please try again.',f_cap_load:'reCAPTCHA has not loaded. Reload the page or disable your ad-blocker.',f_long:'Your message is too long to send, please shorten it.',
  f_send:'SEND MESSAGE',f_sending:'SENDING...',f_ok:'Message sent! Thank you, I will get back to you soon.',f_err:'Failed to send the message. Please try again shortly, or email me directly.',f_wait:'Please wait a moment before sending another message.',copied:'Email copied',
  roles:['TKJ Student','Beginner Web Developer','Tech Enthusiast']}};
 let lang=root.dataset.lang==='en'?'en':'id';
@@ -120,27 +120,46 @@ copyBtn.addEventListener('click',async()=>{
   setTimeout(()=>{copyBtn.classList.remove('done');copyBtn.title='Copy'},1800);
 });
 
-/* Kontak: kirim form ke email lewat FormSubmit (tanpa reCAPTCHA) */
+/* Kontak: Google reCAPTCHA + kirim ke /api/contact (server memverifikasi lalu mengirim email) */
 const form=$('#contactForm'),status=$('#formStatus'),sendBtn=$('#sendBtn'),sendLbl=$('span',sendBtn);
-const loadedAt=Date.now();let lastSent=0;
+const capBox=$('#captcha'),capWrap=capBox.parentElement;
+let capId=null,capTheme=null,lastSent=0;
 const say=(msg,cls)=>{status.textContent=msg;status.className='form-status '+(cls||'')};
+const fitCaptcha=()=>{const s=Math.min(1,capWrap.clientWidth/304);capBox.style.transform=s<1?`scale(${s})`:'';capWrap.style.height=Math.round(78*s)+'px'};
+function renderCaptcha(){
+  if(!window.grecaptcha||!grecaptcha.render)return;
+  const theme=document.documentElement.dataset.theme==='light'?'light':'dark';
+  if(capId!==null&&theme===capTheme)return;
+  capBox.innerHTML='';capTheme=theme;
+  capId=grecaptcha.render(capBox,{sitekey:capBox.dataset.sitekey,theme,callback:()=>say('')});
+  fitCaptcha();
+}
+window.onRecaptchaLoad=renderCaptcha;
+new MutationObserver(renderCaptcha).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+addEventListener('resize',fitCaptcha);fitCaptcha();
+
 form.addEventListener('submit',async e=>{
   e.preventDefault();
   if(!form.checkValidity())return form.reportValidity();
   const fd=new FormData(form);
   if(fd.get('_honey')){say(T[lang].f_ok,'ok');form.reset();return}   /* bot: pura-pura sukses */
-  if(Date.now()-lastSent<30000&&lastSent){say(T[lang].f_wait,'err');return}
+  if(!window.grecaptcha||capId===null){say(T[lang].f_cap_load,'err');return}
+  const token=grecaptcha.getResponse(capId);
+  if(!token){say(T[lang].f_captcha,'err');return}
+  if(lastSent&&Date.now()-lastSent<30000){say(T[lang].f_wait,'err');return}
   sendBtn.disabled=true;sendLbl.textContent=T[lang].f_sending;say('');
   try{
-    const res=await fetch('https://formsubmit.co/ajax/arkaputra2110@gmail.com',{
-      method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
-      body:JSON.stringify({name:fd.get('name'),email:fd.get('email'),subject:fd.get('subject'),message:fd.get('message'),
-        _subject:'[Portfolio] '+fd.get('subject'),_template:'table',_captcha:'false'})});
+    const res=await fetch('/api/contact',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name:fd.get('name'),email:fd.get('email'),subject:fd.get('subject'),message:fd.get('message'),captcha:token})});
     const data=await res.json().catch(()=>({}));
-    if(!res.ok||String(data.success)==='false')throw new Error(data.message||res.status);
-    lastSent=Date.now();say(T[lang].f_ok,'ok');form.reset();form.subject.value='Project Collaboration';
+    if(!res.ok||!data.ok){
+      const k=data.error==='captcha'?'f_cap_fail':data.error==='too_long'?'f_long':'f_err';
+      say(T[lang][k],'err');return;
+    }
+    lastSent=Date.now();say(T[lang].f_ok,'ok');form.reset();
   }catch(err){say(T[lang].f_err,'err')}
-  finally{sendBtn.disabled=false;sendLbl.textContent=T[lang].f_send}
+  finally{sendBtn.disabled=false;sendLbl.textContent=T[lang].f_send;try{grecaptcha.reset(capId)}catch(_){}}
 });
 
 /* Tilt 3D mengikuti kursor */

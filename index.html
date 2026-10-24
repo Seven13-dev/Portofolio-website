@@ -141,17 +141,15 @@
       </div>
     </div>
 
-    <form class="ct-form reveal d1" id="contactForm" action="https://formsubmit.co/arkaputra2110@gmail.com" method="POST">
+    <form class="ct-form reveal d1" id="contactForm" method="post" novalidate>
       <div class="row">
         <label class="fld"><span data-i18n="f_name">NAMA KAMU</span><input type="text" name="name" autocomplete="name" maxlength="80" required data-ph="ph_name"></label>
         <label class="fld"><span data-i18n="f_email">EMAIL KAMU</span><input type="email" name="email" autocomplete="email" maxlength="120" required data-ph="ph_email"></label>
       </div>
-      <label class="fld"><span data-i18n="f_subject">SUBJEK</span><input type="text" name="subject" value="Project Collaboration" maxlength="120" required></label>
+      <label class="fld"><span data-i18n="f_subject">SUBJEK</span><input type="text" name="subject" maxlength="120" required data-ph="ph_subject"></label>
       <label class="fld"><span data-i18n="f_msg">PESAN</span><textarea name="message" rows="6" required data-ph="ph_msg"></textarea></label>
       <input class="hp" type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <input type="hidden" name="_captcha" value="false">
-      <input type="hidden" name="_template" value="table">
-      <input type="hidden" name="_subject" value="Pesan baru dari portofolio ASTERIA">
+      <div class="cap-wrap"><div id="captcha" data-sitekey="6LdHtP4tAAAAAEcdBbK8gYIoRZgIGJI9Rl_8HNQ7"></div></div>
       <button class="send" id="sendBtn" type="submit"><span data-i18n="f_send">KIRIM PESAN</span><svg aria-hidden="true"><use href="#i-send"/></svg></button>
       <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
     </form>
@@ -161,5 +159,6 @@
 
 <footer class="footer"><div class="container">© <span id="yr">2026</span> Arka Putra Maulana. All rights reserved.</div></footer>
 <script src="assets/js/main.js"></script>
+<script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit" async defer></script>
 </body>
 </html>
